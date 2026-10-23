@@ -31,8 +31,13 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   const currentLocale: Locale = locale === "en" ? "en" : "ar";
 
-  await connectToDatabase();
-  const project = await Project.findOne({ slug: slug.toLowerCase() }).lean<IProject>();
+  let project: IProject | null = null;
+  try {
+    await connectToDatabase();
+    project = await Project.findOne({ slug: slug.toLowerCase() }).lean<IProject>();
+  } catch (e) {
+    console.error("Project metadata load error:", e);
+  }
 
   if (!project) return { title: "Project Not Found" };
 
@@ -58,14 +63,17 @@ export default async function ProjectCaseStudyPage({
   const { locale, slug } = await params;
   const currentLocale: Locale = locale === "en" ? "en" : "ar";
 
-  await connectToDatabase();
-
-  // Find project and increment view count
-  const project = await Project.findOneAndUpdate(
-    { slug: slug.toLowerCase(), visible: true },
-    { $inc: { views: 1 } },
-    { new: true }
-  ).lean<IProject>();
+  let project: IProject | null = null;
+  try {
+    await connectToDatabase();
+    project = await Project.findOneAndUpdate(
+      { slug: slug.toLowerCase(), visible: true },
+      { $inc: { views: 1 } },
+      { new: true }
+    ).lean<IProject>();
+  } catch (e) {
+    console.error("Project load error:", e);
+  }
 
   if (!project) {
     notFound();

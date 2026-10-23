@@ -2,6 +2,7 @@ import React from "react";
 import { Locale } from "@/models/types";
 import { getPortfolioData } from "@/lib/data";
 import { seedDatabase } from "@/lib/seed";
+import { isDatabaseConfigured } from "@/lib/mongodb";
 import { Navbar } from "@/components/public/Navbar";
 import { HeroSection } from "@/components/public/HeroSection";
 import { AboutSection } from "@/components/public/AboutSection";
@@ -26,9 +27,13 @@ export default async function LocalizedHomePage({
   let data = await getPortfolioData();
 
   // If database was empty / not yet seeded, seed it automatically so the site is vibrant!
-  if (!data.profile) {
-    await seedDatabase();
-    data = await getPortfolioData();
+  if (!data.profile && isDatabaseConfigured) {
+    try {
+      await seedDatabase();
+      data = await getPortfolioData();
+    } catch (e) {
+      console.error("Auto-seed failed:", e);
+    }
   }
 
   const {

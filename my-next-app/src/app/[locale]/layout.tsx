@@ -14,8 +14,13 @@ export async function generateMetadata({
   const { locale } = await params;
   const currentLocale: Locale = locale === "en" ? "en" : "ar";
 
-  await connectToDatabase();
-  const settings = await SiteSettings.findOne().lean();
+  let settings: any = null;
+  try {
+    await connectToDatabase();
+    settings = await SiteSettings.findOne().lean();
+  } catch (e) {
+    console.error("Metadata settings load error:", e);
+  }
 
   const title =
     getBilingualText(settings?.seo?.title, currentLocale) ||
@@ -66,8 +71,13 @@ export default async function LocaleLayout({
   const currentLocale: Locale = locale === "en" ? "en" : "ar";
   const dir = currentLocale === "ar" ? "rtl" : "ltr";
 
-  await connectToDatabase();
-  const theme = await Theme.findOne().lean();
+  let theme = null;
+  try {
+    await connectToDatabase();
+    theme = await Theme.findOne().lean();
+  } catch (e) {
+    console.error("Theme load error:", e);
+  }
 
   return (
     <div lang={currentLocale} dir={dir} className="min-h-screen bg-[var(--bg)] text-[var(--text)] transition-colors duration-200">
